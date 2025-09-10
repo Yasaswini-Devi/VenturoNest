@@ -1,3 +1,8 @@
+export interface LoginFormData {
+  username: string;
+  password: string;
+}
+
 export interface SignupFormData {
   email: string;
   username: string;
@@ -7,9 +12,4 @@ export interface SignupFormData {
   role: 'entrepreneur' | 'investor';
   companyName?: string;
   investmentFocus?: string;
-}
-
-export interface LoginFormData {
-  username: string;
-  password: string;
 }
