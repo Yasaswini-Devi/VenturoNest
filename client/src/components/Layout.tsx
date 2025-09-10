@@ -156,6 +156,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     navigate('/settings');
   };
 
+  const handleChat = () => {
+    // Navigate to chat page
+    navigate('/chat');
+  };
+
   return (
     <div style={styles.layout}>
       {/* Header */}
@@ -177,6 +182,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
             <button
               style={styles.navButton}
+              onClick={handleChat}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "#f1f5f9";
               }}

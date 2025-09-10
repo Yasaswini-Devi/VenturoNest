@@ -7,6 +7,7 @@ import Profile from './pages/Profile';
 import Entrepreneurs from './pages/Entrepreneurs';
 import Investors from './pages/Investors';
 import Settings from './pages/Settings';
+import ChatPage from './pages/ChatPage';
 import Layout from './components/Layout';
 import { UserProvider, useUser } from './context/UserContext';
 import './styles/App.css';
@@ -58,6 +59,11 @@ function App() {
             <Route path="/settings" element={
               <Layout>
                 <Settings />
+              </Layout>
+            } />
+            <Route path="/chat" element={
+              <Layout>
+                <ChatPage />
               </Layout>
             } />
           </Routes>
