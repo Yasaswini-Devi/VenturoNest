@@ -60,3 +60,12 @@ export interface Conversation {
   unreadCount: number;
   updatedAt: string;
 }
+
+export interface InterestedInvestor extends User {
+  connectionStatus: 'pending' | 'accepted' | 'rejected';
+  interactionType: 'liked' | 'saved' | 'commented' | 'connected';
+  pitchTitle: string;
+  company?: string;
+  investmentFocus?: string;
+  lastInteraction: string;
+}
