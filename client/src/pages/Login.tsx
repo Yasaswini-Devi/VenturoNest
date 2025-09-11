@@ -1,263 +1,300 @@
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import type { LoginFormData } from '../types';
-import { useUser } from '../context/UserContext';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/components/auth/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Users, Lightbulb } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters').regex(/[A-Z]/, 'Password must contain at least one uppercase letter'),
-});
-
-const Login = () => {
+export default function Login() {
   const navigate = useNavigate();
-  const { login } = useUser();
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const { login, register, isLoading } = useAuth();
+  const { toast } = useToast();
+  
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    role: 'investor' as 'entrepreneur' | 'investor',
   });
+  const [error, setError] = useState('');
 
-  const onSubmit = (data: LoginFormData) => {
-    console.log('Login data:', data);
-    
-    // Mock user data - in a real app, this would come from your backend
-    const mockUser = {
-      username: data.username,
-      name: data.username,
-      email: `${data.username}@example.com`,
-      role: data.username.includes('investor') ? 'investor' as const : 'entrepreneur' as const,
-    };
-    
-    login(mockUser);
-    navigate('/dashboard');
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-  const styles = {
-    container: {
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '1rem',
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-    },
-    formContainer: {
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(10px)',
-      borderRadius: '20px',
-      padding: '3rem',
-      width: '100%',
-      maxWidth: '450px',
-      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.2)'
-    },
-    header: {
-      textAlign: 'center' as const,
-      marginBottom: '2.5rem'
-    },
-    logo: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '0.75rem',
-      marginBottom: '1.5rem'
-    },
-    logoIcon: {
-      width: '48px',
-      height: '48px',
-      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#ffffff',
-      fontSize: '1.5rem',
-      fontWeight: '700'
-    },
-    logoText: {
-      fontSize: '1.75rem',
-      fontWeight: '700',
-      color: '#1e293b',
-      margin: 0
-    },
-    title: {
-      fontSize: '1.5rem',
-      fontWeight: '600',
-      color: '#1e293b',
-      margin: '0 0 0.5rem 0'
-    },
-    subtitle: {
-      fontSize: '1rem',
-      color: '#64748b',
-      margin: 0
-    },
-    form: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '1.5rem'
-    },
-    inputGroup: {
-      display: 'flex',
-      flexDirection: 'column' as const,
-      gap: '0.5rem'
-    },
-    label: {
-      fontSize: '0.875rem',
-      fontWeight: '600',
-      color: '#374151',
-      margin: 0
-    },
-    input: {
-      width: '100%',
-      padding: '0.875rem 1rem',
-      fontSize: '1rem',
-      border: '2px solid #e5e7eb',
-      borderRadius: '12px',
-      outline: 'none',
-      transition: 'all 0.2s ease',
-      boxSizing: 'border-box' as const
-    },
-    inputFocus: {
-      borderColor: '#3b82f6',
-      boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
-    },
-    errorMessage: {
-      color: '#ef4444',
-      fontSize: '0.875rem',
-      margin: '0.25rem 0 0 0'
-    },
-    submitButton: {
-      width: '100%',
-      padding: '1rem',
-      fontSize: '1rem',
-      fontWeight: '600',
-      color: '#ffffff',
-      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-      border: 'none',
-      borderRadius: '12px',
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      marginTop: '1rem'
-    },
-    submitButtonHover: {
-      transform: 'translateY(-2px)',
-      boxShadow: '0 10px 20px rgba(59, 130, 246, 0.3)'
-    },
-    footer: {
-      textAlign: 'center' as const,
-      marginTop: '2rem',
-      paddingTop: '1.5rem',
-      borderTop: '1px solid #e5e7eb'
-    },
-    footerText: {
-      fontSize: '0.875rem',
-      color: '#64748b',
-      margin: '0 0 0.75rem 0'
-    },
-    signupLink: {
-      color: '#3b82f6',
-      textDecoration: 'none',
-      fontWeight: '600',
-      cursor: 'pointer',
-      transition: 'color 0.2s ease'
-    },
-    signupLinkHover: {
-      color: '#2563eb'
-    },
-    demoCredentials: {
-      background: '#f8fafc',
-      border: '1px solid #e2e8f0',
-      borderRadius: '12px',
-      padding: '1rem',
-      marginBottom: '1.5rem'
-    },
-    demoTitle: {
-      fontSize: '0.875rem',
-      fontWeight: '600',
-      color: '#374151',
-      margin: '0 0 0.5rem 0'
-    },
-    demoItem: {
-      fontSize: '0.75rem',
-      color: '#64748b',
-      margin: '0.25rem 0',
-      fontFamily: 'monospace'
+    try {
+      if (activeTab === 'login') {
+        await login(formData.email, formData.password, formData.role);
+        toast({
+          title: "Welcome back!",
+          description: "You've been successfully logged in.",
+        });
+      } else {
+        await register(formData.email, formData.password, formData.name, formData.role);
+        toast({
+          title: "Account created!",
+          description: "Welcome to PitchBridge.",
+        });
+      }
+      
+      // Redirect based on role
+      if (formData.role === 'investor') {
+        navigate('/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
 
+  const fillDemoData = (role: 'entrepreneur' | 'investor') => {
+    setFormData({
+      email: role === 'investor' ? 'investor@demo.com' : 'entrepreneur@demo.com',
+      password: 'demo123',
+      name: role === 'investor' ? 'John Investor' : 'Sarah Chen',
+      role,
+    });
+  };
+
   return (
-    <div style={styles.container}>
-      <div style={styles.formContainer}>
-        <div style={styles.header}>
-          <div style={styles.logo}>
-            <div style={styles.logoIcon}>V</div>
-            <h1 style={styles.logoText}>VenturoNest</h1>
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        {/* Left side - Branding */}
+        <div className="text-center lg:text-left space-y-6">
+          <div>
+            <Link to="/" className="inline-block">
+              <h1 className="text-4xl font-bold text-primary mb-2">PitchBridge</h1>
+            </Link>
+            <p className="text-xl text-muted-foreground">
+              Where innovation meets investment
+            </p>
           </div>
-          <h2 style={styles.title}>Welcome Back</h2>
-          <p style={styles.subtitle}>Sign in to your account to continue</p>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 justify-center lg:justify-start">
+              <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium">For Investors</p>
+                <p className="text-sm text-muted-foreground">Discover breakthrough innovations</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 justify-center lg:justify-start">
+              <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                <Lightbulb className="h-5 w-5 text-primary" />
+              </div>
+              <div className="text-left">
+                <p className="font-medium">For Entrepreneurs</p>
+                <p className="text-sm text-muted-foreground">Showcase your vision to the world</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-primary/5 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium text-primary">Demo Credentials:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fillDemoData('investor')}
+                className="justify-start h-auto p-2"
+              >
+                <Users className="h-3 w-3 mr-2" />
+                <div className="text-left">
+                  <div>investor@demo.com</div>
+                  <div className="text-muted-foreground">password: demo123</div>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fillDemoData('entrepreneur')}
+                className="justify-start h-auto p-2"
+              >
+                <Lightbulb className="h-3 w-3 mr-2" />
+                <div className="text-left">
+                  <div>entrepreneur@demo.com</div>
+                  <div className="text-muted-foreground">password: demo123</div>
+                </div>
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <form style={styles.form} onSubmit={handleSubmit(onSubmit)}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Username</label>
-            <input
-              type="text"
-              style={styles.input}
-              placeholder="Enter your username"
-              {...register('username')}
-              onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
-            {errors.username && <p style={styles.errorMessage}>{errors.username.message}</p>}
-          </div>
+        {/* Right side - Auth Form */}
+        <Card className="shadow-card border-0">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">
+              {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
+            </CardTitle>
+            <CardDescription>
+              {activeTab === 'login' 
+                ? 'Sign in to your account to continue' 
+                : 'Join the community of innovators and investors'
+              }
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'register')}>
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="login">Sign In</TabsTrigger>
+                <TabsTrigger value="register">Sign Up</TabsTrigger>
+              </TabsList>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              style={styles.input}
-              placeholder="Enter your password"
-              {...register('password')}
-              onFocus={(e) => Object.assign(e.target.style, styles.inputFocus)}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
-            {errors.password && <p style={styles.errorMessage}>{errors.password.message}</p>}
-          </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Role Selection */}
+                <div className="space-y-2">
+                  <Label>I am a...</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={formData.role === 'investor' ? 'default' : 'outline'}
+                      onClick={() => setFormData({ ...formData, role: 'investor' })}
+                      className="justify-start h-auto p-3"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      <div className="text-left">
+                        <div className="font-medium">Investor</div>
+                        <div className="text-xs opacity-70">Looking for opportunities</div>
+                      </div>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={formData.role === 'entrepreneur' ? 'default' : 'outline'}
+                      onClick={() => setFormData({ ...formData, role: 'entrepreneur' })}
+                      className="justify-start h-auto p-3"
+                    >
+                      <Lightbulb className="h-4 w-4 mr-2" />
+                      <div className="text-left">
+                        <div className="font-medium">Entrepreneur</div>
+                        <div className="text-xs opacity-70">Seeking investment</div>
+                      </div>
+                    </Button>
+                  </div>
+                </div>
 
-          <button
-            type="submit"
-            style={styles.submitButton}
-            onMouseEnter={(e) => Object.assign((e.target as HTMLElement).style, styles.submitButtonHover)}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.transform = 'translateY(0)';
-              (e.target as HTMLElement).style.boxShadow = 'none';
-            }}
-          >
-            Sign In
-          </button>
-        </form>
+                <TabsContent value="register" className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                      <Input
+                        id="name"
+                        placeholder="Enter your full name"
+                        type="text"
+                        className="pl-10"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
 
-        <div style={styles.footer}>
-          <p style={styles.footerText}>Don't have an account?</p>
-          <a
-            style={styles.signupLink}
-            onClick={() => navigate('/signup')}
-            onMouseEnter={(e) => (e.target as HTMLElement).style.color = styles.signupLinkHover.color}
-            onMouseLeave={(e) => (e.target as HTMLElement).style.color = styles.signupLink.color}
-          >
-            Create Account
-          </a>
-        </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="email"
+                      placeholder="Enter your email"
+                      type="email"
+                      className="pl-10"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      id="password"
+                      placeholder="Enter your password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="pl-10 pr-10"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-primary hover:opacity-90" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    'Please wait...'
+                  ) : (
+                    <>
+                      {activeTab === 'login' ? 'Sign In' : 'Create Account'}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  {activeTab === 'login' ? (
+                    <>
+                      Don't have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('register')}
+                        className="text-primary hover:underline"
+                      >
+                        Sign up
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      Already have an account?{' '}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('login')}
+                        className="text-primary hover:underline"
+                      >
+                        Sign in
+                      </button>
+                    </>
+                  )}
+                </div>
+              </form>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

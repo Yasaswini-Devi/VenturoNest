@@ -1,444 +1,218 @@
-import React from "react";
-// @ts-ignore
-import ReactPlayer from "react-player";
-import VideoModal from "../components/VideoModal";
+import { useState } from 'react';
+import { Header } from '@/components/layout/Header';
+import { PitchCard } from '@/components/dashboard/PitchCard';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TrendingUp, Clock, Filter } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthContext';
+import type { Pitch } from '@/types/user';
 
-interface Video {
-  id: string;
-  url: string;
-  title: string;
-  description: string;
-  channel: string;
-  views: string;
-  uploadTime: string;
-  duration: string;
-}
+// Mock data
+const mockPitches: Pitch[] = [
+  {
+    id: '1',
+    title: 'AI-Powered Healthcare Assistant',
+    description: 'Revolutionary AI assistant that helps doctors diagnose patients faster and more accurately using machine learning algorithms.',
+    videoUrl: 'https://example.com/video1',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
+    industry: 'Healthcare',
+    fundingNeeds: 500000,
+    currency: 'USD',
+    entrepreneurId: '2',
+    entrepreneur: {
+      id: '2',
+      name: 'Sarah Chen',
+      email: 'sarah@example.com',
+      role: 'entrepreneur',
+      avatar: '',
+      bio: 'Medical AI researcher',
+      interests: ['AI', 'Healthcare'],
+      createdAt: '2024-01-01',
+    },
+    likes: 42,
+    comments: 8,
+    saves: 15,
+    isLiked: false,
+    isSaved: true,
+    createdAt: '2024-01-15',
+  },
+  {
+    id: '2',
+    title: 'Sustainable Energy Storage Solution',
+    description: 'Next-generation battery technology that reduces environmental impact while increasing energy storage capacity by 300%.',
+    videoUrl: 'https://example.com/video2',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=400&h=300&fit=crop',
+    industry: 'Clean Energy',
+    fundingNeeds: 2000000,
+    currency: 'USD',
+    entrepreneurId: '3',
+    entrepreneur: {
+      id: '3',
+      name: 'Michael Rodriguez',
+      email: 'michael@example.com',
+      role: 'entrepreneur',
+      avatar: '',
+      bio: 'Clean energy innovator',
+      interests: ['Clean Energy', 'Sustainability'],
+      createdAt: '2024-01-01',
+    },
+    likes: 67,
+    comments: 12,
+    saves: 23,
+    isLiked: true,
+    isSaved: false,
+    createdAt: '2024-01-14',
+  },
+  {
+    id: '3',
+    title: 'Fintech Payment Platform',
+    description: 'Seamless cross-border payment solution for small businesses with instant settlements and minimal fees.',
+    videoUrl: 'https://example.com/video3',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
+    industry: 'Fintech',
+    fundingNeeds: 1500000,
+    currency: 'USD',
+    entrepreneurId: '4',
+    entrepreneur: {
+      id: '4',
+      name: 'Emma Thompson',
+      email: 'emma@example.com',
+      role: 'entrepreneur',
+      avatar: '',
+      bio: 'Fintech entrepreneur',
+      interests: ['Fintech', 'Banking'],
+      createdAt: '2024-01-01',
+    },
+    likes: 89,
+    comments: 15,
+    saves: 31,
+    isLiked: false,
+    isSaved: false,
+    createdAt: '2024-01-13',
+  },
+];
 
-interface DashboardProps {
-  userType?: "entrepreneur" | "investor";
-}
+export default function Dashboard() {
+  const { user } = useAuth();
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
 
-const Dashboard: React.FC<DashboardProps> = ({ userType = "entrepreneur" }) => {
-  const [selectedVideo, setSelectedVideo] = React.useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [hoveredCard, setHoveredCard] = React.useState<string | null>(null);
+  if (!user) return null;
 
-  // Sample video data
-  const videos: Video[] = [
-    {
-      id: "1",
-      url: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
-      title: "Revolutionary AI Startup Pitch - Next Generation Technology",
-      description: "Watch our groundbreaking AI startup pitch that's changing the future of technology. Learn about our innovative solutions and investment opportunities.",
-      channel: "TechVentures",
-      views: "125K views",
-      uploadTime: "2 days ago",
-      duration: "12:45"
-    },
-    {
-      id: "2",
-      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      title: "Sustainable Energy Startup - Clean Tech Innovation",
-      description: "Discover how our clean energy startup is revolutionizing sustainable power solutions. Perfect investment opportunity for green tech investors.",
-      channel: "GreenTech Innovations",
-      views: "89K views",
-      uploadTime: "1 week ago",
-      duration: "8:32"
-    },
-    {
-      id: "3",
-      url: "https://www.youtube.com/watch?v=ScMzIvxBSi4",
-      title: "FinTech Revolution - Digital Banking Platform",
-      description: "The future of banking is here. See how our FinTech startup is disrupting traditional financial services with innovative digital solutions.",
-      channel: "FinTech Future",
-      views: "234K views",
-      uploadTime: "3 days ago",
-      duration: "15:20"
-    },
-    {
-      id: "4",
-      url: "https://www.youtube.com/watch?v=jNQXAC9IVRw",
-      title: "Healthcare Innovation - Medical AI Assistant",
-      description: "Revolutionary healthcare technology that's saving lives. Our AI-powered medical assistant is transforming patient care worldwide.",
-      channel: "MedTech Solutions",
-      views: "567K views",
-      uploadTime: "5 days ago",
-      duration: "10:15"
-    },
-    {
-      id: "5",
-      url: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
-      title: "EdTech Platform - Future of Online Learning",
-      description: "Transform education with our innovative learning platform. See how we're making quality education accessible to millions worldwide.",
-      channel: "EduTech Leaders",
-      views: "156K views",
-      uploadTime: "1 week ago",
-      duration: "13:45"
-    },
-    {
-      id: "6",
-      url: "https://www.youtube.com/watch?v=L_LUpnjgPso",
-      title: "AgriTech Revolution - Smart Farming Solutions",
-      description: "The future of agriculture is smart and sustainable. Discover our IoT-powered farming solutions that increase yield while protecting the environment.",
-      channel: "Smart Farming Co",
-      views: "78K views",
-      uploadTime: "4 days ago",
-      duration: "9:28"
-    }
-  ];
-
-  const handleVideoClick = (video: Video) => {
-    setSelectedVideo(video);
-    setIsModalOpen(true);
+  const handleLike = (pitchId: string) => {
+    console.log('Liked pitch:', pitchId);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedVideo(null);
+  const handleSave = (pitchId: string) => {
+    console.log('Saved pitch:', pitchId);
   };
 
-  const styles = {
-    container: {
-      padding: "2rem",
-      width: "100%",
-      backgroundColor: "#f8fafc",
-      minHeight: "calc(100vh - 200px)"
-    },
-    header: {
-      marginBottom: "3rem",
-      textAlign: "center" as const
-    },
-    title: {
-      fontSize: "2.5rem",
-      fontWeight: "700",
-      color: "#1e293b",
-      marginBottom: "0.5rem",
-      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-      backgroundClip: "text"
-    },
-    subtitle: {
-      fontSize: "1.1rem",
-      color: "#64748b",
-      maxWidth: "600px",
-      margin: "0 auto"
-    },
-    videoGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-      gap: "1.5rem",
-      marginBottom: "3rem",
-      width: "100%"
-    },
-    videoCard: {
-      backgroundColor: "#ffffff",
-      borderRadius: "16px",
-      overflow: "hidden",
-      boxShadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      border: "1px solid #f1f5f9"
-    },
-    videoCardHovered: {
-      transform: "translateY(-8px)",
-      boxShadow: "0 20px 40px rgba(0, 0, 0, 0.12)"
-    },
-    videoContainer: {
-      position: "relative" as const,
-      width: "100%",
-      height: "220px",
-      backgroundColor: "#000",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    },
-    thumbnailOverlay: {
-      position: "absolute" as const,
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.3)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      opacity: 0,
-      transition: "opacity 0.3s ease"
-    },
-    thumbnailOverlayHovered: {
-      opacity: 1
-    },
-    playButton: {
-      width: "60px",
-      height: "60px",
-      backgroundColor: "rgba(255, 255, 255, 0.9)",
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "1.5rem",
-      color: "#3b82f6",
-      border: "none",
-      cursor: "pointer",
-      transform: "scale(0.8)",
-      transition: "transform 0.3s ease"
-    },
-    playButtonHovered: {
-      transform: "scale(1)"
-    },
-    duration: {
-      position: "absolute" as const,
-      bottom: "8px",
-      right: "8px",
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
-      color: "#ffffff",
-      padding: "2px 6px",
-      borderRadius: "4px",
-      fontSize: "0.75rem",
-      fontWeight: "500"
-    },
-    cardContent: {
-      padding: "1.5rem"
-    },
-    cardHeader: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: "0.75rem",
-      marginBottom: "0.5rem"
-    },
-    channelAvatar: {
-      width: "36px",
-      height: "36px",
-      borderRadius: "50%",
-      backgroundColor: "#3b82f6",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#ffffff",
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      flexShrink: 0
-    },
-    cardInfo: {
-      flex: 1,
-      minWidth: 0
-    },
-    cardTitle: {
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#1e293b",
-      lineHeight: "1.4",
-      marginBottom: "0.25rem",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      display: "-webkit-box",
-      WebkitLineClamp: 2,
-      WebkitBoxOrient: "vertical" as any
-    },
-    channelName: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500",
-      marginBottom: "0.25rem"
-    },
-    videoMeta: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem"
-    },
-    metaDot: {
-      width: "3px",
-      height: "3px",
-      backgroundColor: "#64748b",
-      borderRadius: "50%"
-    },
-    description: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      lineHeight: "1.5",
-      marginTop: "0.5rem",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      display: "-webkit-box",
-      WebkitLineClamp: 2,
-      WebkitBoxOrient: "vertical" as any
-    },
-    actionButtons: {
-      display: "flex",
-      gap: "0.5rem",
-      marginTop: "1rem",
-      paddingTop: "1rem",
-      borderTop: "1px solid #f1f5f9"
-    },
-    actionButton: {
-      flex: 1,
-      padding: "0.5rem 1rem",
-      fontSize: "0.875rem",
-      fontWeight: "500",
-      border: "1px solid #e2e8f0",
-      borderRadius: "6px",
-      backgroundColor: "#ffffff",
-      color: "#374151",
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0.375rem"
-    },
-    primaryButton: {
-      backgroundColor: "#3b82f6",
-      color: "#ffffff",
-      border: "1px solid #3b82f6"
-    }
+  const handleComment = (pitchId: string) => {
+    console.log('Comment on pitch:', pitchId);
+  };
+
+  const handleView = (pitchId: string) => {
+    console.log('View pitch:', pitchId);
   };
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <h1 style={styles.title}>Investor Dashboard</h1>
-        <p style={styles.subtitle}>
-          Discover innovative startups and investment opportunities. 
-          Connect with entrepreneurs and watch their journey unfold.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-hero">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">
+            {user.role === 'investor' ? 'Discover Pitches' : 'My Dashboard'}
+          </h1>
+          <p className="text-muted-foreground">
+            {user.role === 'investor' 
+              ? 'Find your next investment opportunity' 
+              : 'Track your pitches and engagement'
+            }
+          </p>
+        </div>
 
-      {/* Video Grid */}
-      <div style={styles.videoGrid}>
-        {videos.map((video) => (
-          <div
-            key={video.id}
-            style={{
-              ...styles.videoCard,
-              ...(hoveredCard === video.id ? styles.videoCardHovered : {})
-            }}
-            onMouseEnter={() => setHoveredCard(video.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-            onClick={() => handleVideoClick(video)}
-          >
-            {/* Video Thumbnail */}
-            <div style={styles.videoContainer}>
-              {/* Using a simple div with solid background instead of thumbnail */}
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  backgroundColor: "#1e293b",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  position: "relative",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center"
-                }}
-              >
-                {/* Thumbnail Overlay */}
-                <div
-                  style={{
-                    ...styles.thumbnailOverlay,
-                    ...(hoveredCard === video.id ? styles.thumbnailOverlayHovered : {})
-                  }}
-                >
-                  <button
-                    style={{
-                      ...styles.playButton,
-                      ...(hoveredCard === video.id ? styles.playButtonHovered : {})
-                    }}
-                  >
-                    ▶
-                  </button>
-                </div>
+        <Tabs defaultValue="feed" className="w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
+            <TabsList className="grid w-full sm:w-auto grid-cols-3">
+              <TabsTrigger value="feed">Feed</TabsTrigger>
+              <TabsTrigger value="trending">Trending</TabsTrigger>
+              <TabsTrigger value="saved">Saved</TabsTrigger>
+            </TabsList>
 
-                {/* Duration */}
-                <div style={styles.duration}>{video.duration}</div>
-              </div>
-            </div>
+            <div className="flex items-center space-x-4">
+              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                <SelectTrigger className="w-40">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Industries</SelectItem>
+                  <SelectItem value="ai">AI & Tech</SelectItem>
+                  <SelectItem value="healthcare">Healthcare</SelectItem>
+                  <SelectItem value="fintech">Fintech</SelectItem>
+                  <SelectItem value="clean-energy">Clean Energy</SelectItem>
+                  <SelectItem value="retail">Retail</SelectItem>
+                </SelectContent>
+              </Select>
 
-            {/* Card Content */}
-            <div style={styles.cardContent}>
-              <div style={styles.cardHeader}>
-                <div style={styles.channelAvatar}>
-                  {video.channel.charAt(0)}
-                </div>
-                <div style={styles.cardInfo}>
-                  <h3 style={styles.cardTitle}>{video.title}</h3>
-                  <p style={styles.channelName}>{video.channel}</p>
-                  <div style={styles.videoMeta}>
-                    <span>{video.views}</span>
-                    <div style={styles.metaDot}></div>
-                    <span>{video.uploadTime}</span>
-                  </div>
-                </div>
-              </div>
-
-              <p style={styles.description}>{video.description}</p>
-
-              {/* Action Buttons */}
-              <div style={styles.actionButtons}>
-                {userType === "investor" ? (
-                  <>
-                    <button
-                      style={{...styles.actionButton, ...styles.primaryButton}}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        alert("Investment interest noted!");
-                      }}
-                    >
-                      💰 Invest
-                    </button>
-                    <button
-                      style={styles.actionButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        alert("Contacting startup...");
-                      }}
-                    >
-                      📞 Contact
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      style={{...styles.actionButton, ...styles.primaryButton}}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        alert("Saved to favorites!");
-                      }}
-                    >
-                      ❤️ Save
-                    </button>
-                    <button
-                      style={styles.actionButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        alert("Sharing...");
-                      }}
-                    >
-                      📤 Share
-                    </button>
-                  </>
-                )}
-              </div>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 mr-2" />
+                      Newest
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="trending">
+                    <div className="flex items-center">
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Trending
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Video Modal */}
-      {isModalOpen && selectedVideo && (
-        <VideoModal
-          video={selectedVideo}
-          isOpen={isModalOpen}
-          onClose={closeModal}
-          userType={userType}
-        />
-      )}
+          <TabsContent value="feed" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mockPitches.map((pitch) => (
+                <PitchCard
+                  key={pitch.id}
+                  pitch={pitch}
+                  userRole={user.role as 'entrepreneur' | 'investor'}
+                  onLike={handleLike}
+                  onSave={handleSave}
+                  onComment={handleComment}
+                  onView={handleView}
+                />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="trending" className="space-y-6">
+            <div className="text-center py-12">
+              <TrendingUp className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Trending Pitches</h3>
+              <p className="text-muted-foreground">Most popular pitches this week will appear here</p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="saved" className="space-y-6">
+            <div className="text-center py-12">
+              <div className="text-center py-12">
+                <h3 className="text-xl font-semibold mb-2">Saved Pitches</h3>
+                <p className="text-muted-foreground">Your bookmarked pitches will appear here</p>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   );
-};
-
-export default Dashboard;
+}

@@ -1,356 +1,231 @@
-import React from "react";
+import { useState } from 'react';
+import { Header } from '@/components/layout/Header';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Camera, Plus, X, Edit2, Save } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthContext';
+import type { User } from '@/types/user';
 
-interface ProfileProps {
-  userType?: "entrepreneur" | "investor";
-}
+// Mock user data
+const availableInterests = [
+  'AI & Machine Learning',
+  'Fintech',
+  'Healthcare',
+  'SaaS',
+  'E-commerce',
+  'Clean Energy',
+  'Blockchain',
+  'EdTech',
+  'FoodTech',
+  'Gaming',
+  'IoT',
+  'Mobility',
+  'Real Estate',
+  'Retail',
+  'Travel',
+];
 
-const Profile: React.FC<ProfileProps> = ({ userType = "investor" }) => {
-  const styles = {
-    container: {
-      padding: "2rem",
-      width: "100%",
-      backgroundColor: "#f8fafc",
-      minHeight: "calc(100vh - 200px)"
-    },
-    topNav: {
-      display: "flex",
-      justifyContent: "center",
-      gap: "2rem",
-      marginBottom: "2rem",
-      padding: "1rem",
-      backgroundColor: "#ffffff",
-      borderRadius: "12px",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
-    },
-    navButton: {
-      padding: "0.75rem 1.5rem",
-      fontSize: "0.875rem",
-      fontWeight: "500",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      backgroundColor: "#f1f5f9",
-      color: "#64748b"
-    },
-    activeNavButton: {
-      backgroundColor: "#3b82f6",
-      color: "#ffffff"
-    },
-    profileHeader: {
-      backgroundColor: "#ffffff",
-      borderRadius: "16px",
-      padding: "2rem",
-      marginBottom: "2rem",
-      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)",
-      display: "flex",
-      alignItems: "center",
-      gap: "2rem"
-    },
-    profileImage: {
-      width: "120px",
-      height: "120px",
-      borderRadius: "50%",
-      backgroundColor: "#e2e8f0",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "3rem",
-      color: "#64748b",
-      flexShrink: 0
-    },
-    profileInfo: {
-      flex: 1
-    },
-    profileName: {
-      fontSize: "2rem",
-      fontWeight: "700",
-      color: "#1e293b",
-      marginBottom: "0.5rem"
-    },
-    profileDetails: {
-      display: "flex",
-      gap: "1.5rem",
-      marginBottom: "1rem",
-      flexWrap: "wrap" as const
-    },
-    profileEmail: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500"
-    },
-    profilePhone: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500"
-    },
-    profileUsername: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500"
-    },
-    profileBadge: {
-      display: "inline-block",
-      padding: "0.25rem 0.75rem",
-      fontSize: "0.75rem",
-      fontWeight: "600",
-      backgroundColor: "#8b5cf6",
-      color: "#ffffff",
-      borderRadius: "20px",
-      marginRight: "1rem"
-    },
-    profileCategory: {
-      display: "inline-block",
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500"
-    },
-    profileDescription: {
-      fontSize: "1rem",
-      color: "#64748b",
-      lineHeight: "1.6",
-      marginTop: "1rem",
-      marginBottom: "1.5rem"
-    },
-    profileActions: {
-      display: "flex",
-      gap: "1rem"
-    },
-    actionButton: {
-      padding: "0.75rem 1.5rem",
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      transition: "all 0.2s ease"
-    },
-    primaryButton: {
-      backgroundColor: "#3b82f6",
-      color: "#ffffff"
-    },
-    secondaryButton: {
-      backgroundColor: "#8b5cf6",
-      color: "#ffffff"
-    },
-    statsSection: {
-      display: "flex",
-      gap: "2rem",
-      marginBottom: "2rem"
-    },
-    statCard: {
-      backgroundColor: "#ffffff",
-      borderRadius: "12px",
-      padding: "1.5rem",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
-      textAlign: "center" as const,
-      flex: 1
-    },
-    statNumber: {
-      fontSize: "1.75rem",
-      fontWeight: "700",
-      color: "#1e293b",
-      marginBottom: "0.25rem"
-    },
-    statLabel: {
-      fontSize: "0.875rem",
-      color: "#64748b",
-      fontWeight: "500"
-    },
-    contentSection: {
-      backgroundColor: "#ffffff",
-      borderRadius: "16px",
-      padding: "2rem",
-      boxShadow: "0 4px 16px rgba(0, 0, 0, 0.05)"
-    },
-    sectionTabs: {
-      display: "flex",
-      borderBottom: "1px solid #e2e8f0",
-      marginBottom: "2rem"
-    },
-    tab: {
-      padding: "1rem 2rem",
-      fontSize: "0.875rem",
-      fontWeight: "500",
-      border: "none",
-      backgroundColor: "transparent",
-      color: "#64748b",
-      cursor: "pointer",
-      transition: "color 0.2s ease",
-      borderBottom: "2px solid transparent"
-    },
-    activeTab: {
-      color: "#3b82f6",
-      borderBottomColor: "#3b82f6"
-    },
-    videoGrid: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-      gap: "1.5rem"
-    },
-    videoCard: {
-      backgroundColor: "#f8fafc",
-      borderRadius: "12px",
-      overflow: "hidden",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
-      transition: "transform 0.2s ease"
-    },
-    videoThumbnail: {
-      width: "100%",
-      height: "180px",
-      backgroundColor: "#1e293b",
-      position: "relative" as const,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    },
-    playIcon: {
-      width: "50px",
-      height: "50px",
-      backgroundColor: "rgba(255, 255, 255, 0.9)",
-      borderRadius: "50%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "1.25rem",
-      color: "#3b82f6"
-    },
-    videoInfo: {
-      padding: "1rem"
-    },
-    videoTitle: {
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      color: "#1e293b",
-      marginBottom: "0.5rem",
-      lineHeight: "1.4"
-    },
-    videoStats: {
-      fontSize: "0.75rem",
-      color: "#64748b"
+export default function Profile() {
+  const { user } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    bio: user?.bio || '',
+    interests: [...(user?.interests || [])],
+  });
+
+  if (!user) return null;
+
+  const handleSave = () => {
+    // In a real app, this would update the user via API
+    console.log('Updating user:', formData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: user.name,
+      bio: user.bio || '',
+      interests: [...user.interests],
+    });
+    setIsEditing(false);
+  };
+
+  const addInterest = (interest: string) => {
+    if (!formData.interests.includes(interest)) {
+      setFormData({
+        ...formData,
+        interests: [...formData.interests, interest],
+      });
     }
   };
 
-  const [activeTab, setActiveTab] = React.useState("videos");
+  const removeInterest = (interest: string) => {
+    setFormData({
+      ...formData,
+      interests: formData.interests.filter(i => i !== interest),
+    });
+  };
 
   return (
-    <div style={styles.container}>
-      {/* Profile Header */}
-      <div style={styles.profileHeader}>
-        <div style={styles.profileImage}>
-          👤
-        </div>
-        <div style={styles.profileInfo}>
-          <h1 style={styles.profileName}>InvestorJoe </h1>
-          <div style={styles.profileDetails}>
-            <span style={styles.profileEmail}>📧 InvestorJoe@venturonest.com</span>
-            <span style={styles.profilePhone}>📱 +91 9876543210</span>
-            <span style={styles.profileUsername}>👤 @InvestorJoe</span>
-          </div>
-          <div>
-            <span style={styles.profileBadge}>Investor</span>
-            <span style={styles.profileCategory}>HealthTech, AI, FinTech</span>
-          </div>
-          <p style={styles.profileDescription}>
-            Angel investor and entrepreneur with 12+ years of experience in scaling healthcare, AI, and fintech startups. 
-            Passionate about transformative solutions that can impact millions of lives. Portfolio includes 15+ successful investments.
-          </p>
-          <div style={styles.profileActions}>
-            <button style={{...styles.actionButton, ...styles.primaryButton}}>
-              ✏️ Edit Profile
-            </button>
-            <button style={{...styles.actionButton, ...styles.secondaryButton}}>
-              📤 Upload Video
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div style={styles.statsSection}>
-        <div style={styles.statCard}>
-          <div style={styles.statNumber}>2</div>
-          <div style={styles.statLabel}>Videos</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statNumber}>2</div>
-          <div style={styles.statLabel}>Saved</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statNumber}>15</div>
-          <div style={styles.statLabel}>Investments</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statNumber}>45</div>
-          <div style={styles.statLabel}>Following</div>
-        </div>
-      </div>
-
-      {/* Content Section */}
-      <div style={styles.contentSection}>
-        <div style={styles.sectionTabs}>
-          <button 
-            style={{...styles.tab, ...(activeTab === "videos" ? styles.activeTab : {})}}
-            onClick={() => setActiveTab("videos")}
-          >
-            📹 Videos
-          </button>
-          <button 
-            style={{...styles.tab, ...(activeTab === "saved" ? styles.activeTab : {})}}
-            onClick={() => setActiveTab("saved")}
-          >
-            💾 Saved
-          </button>
+    <div className="min-h-screen bg-gradient-hero">
+      <Header />
+      
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Profile</h1>
+          <p className="text-muted-foreground">Manage your profile information and preferences</p>
         </div>
 
-        {activeTab === "videos" && (
-          <div style={styles.videoGrid}>
-            <div style={styles.videoCard}>
-              <div style={styles.videoThumbnail}>
-                <div style={styles.playIcon}>▶</div>
-              </div>
-              <div style={styles.videoInfo}>
-                <h3 style={styles.videoTitle}>Investment Strategy: Healthcare Tech</h3>
-                <p style={styles.videoStats}>1.2K views • 3 days ago</p>
-              </div>
-            </div>
-            <div style={styles.videoCard}>
-              <div style={styles.videoThumbnail}>
-                <div style={styles.playIcon}>▶</div>
-              </div>
-              <div style={styles.videoInfo}>
-                <h3 style={styles.videoTitle}>AI Startup Evaluation Framework</h3>
-                <p style={styles.videoStats}>856 views • 1 week ago</p>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Picture & Basic Info */}
+          <div className="lg:col-span-1">
+            <Card className="shadow-card border-0">
+              <CardContent className="p-6 text-center">
+                <div className="relative inline-block mb-4">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback className="text-xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <Button 
+                    size="sm" 
+                    className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <h2 className="text-xl font-semibold mb-1">{user.name}</h2>
+                <p className="text-muted-foreground text-sm mb-2">{user.email}</p>
+                <Badge variant="secondary" className="mb-4 capitalize">
+                  {user.role}
+                </Badge>
+                
+                <p className="text-sm text-muted-foreground">
+                  Member since {new Date(user.createdAt).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        )}
 
-        {activeTab === "saved" && (
-          <div style={styles.videoGrid}>
-            <div style={styles.videoCard}>
-              <div style={styles.videoThumbnail}>
-                <div style={styles.playIcon}>▶</div>
-              </div>
-              <div style={styles.videoInfo}>
-                <h3 style={styles.videoTitle}>Revolutionary AI Startup Pitch</h3>
-                <p style={styles.videoStats}>125K views • 2 days ago</p>
-              </div>
-            </div>
-            <div style={styles.videoCard}>
-              <div style={styles.videoThumbnail}>
-                <div style={styles.playIcon}>▶</div>
-              </div>
-              <div style={styles.videoInfo}>
-                <h3 style={styles.videoTitle}>Sustainable Energy Innovation</h3>
-                <p style={styles.videoStats}>89K views • 1 week ago</p>
-              </div>
-            </div>
+          {/* Profile Details */}
+          <div className="lg:col-span-2">
+            <Card className="shadow-card border-0">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Profile Details</CardTitle>
+                {!isEditing ? (
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Button variant="outline" onClick={handleCancel}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSave}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save
+                    </Button>
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  {isEditing ? (
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    />
+                  ) : (
+                    <p className="text-sm py-2">{user.name}</p>
+                  )}
+                </div>
+
+                {/* Bio */}
+                <div className="space-y-2">
+                  <Label htmlFor="bio">Bio</Label>
+                  {isEditing ? (
+                    <Textarea
+                      id="bio"
+                      placeholder="Tell us about yourself..."
+                      value={formData.bio}
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                      rows={4}
+                    />
+                  ) : (
+                    <p className="text-sm py-2 text-muted-foreground">
+                      {user.bio || 'No bio added yet.'}
+                    </p>
+                  )}
+                </div>
+
+                {/* Interests */}
+                <div className="space-y-2">
+                  <Label>Interests</Label>
+                  {isEditing ? (
+                    <div className="space-y-4">
+                      {/* Current Interests */}
+                      <div className="flex flex-wrap gap-2">
+                        {formData.interests.map((interest) => (
+                          <Badge 
+                            key={interest} 
+                            variant="secondary" 
+                            className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => removeInterest(interest)}
+                          >
+                            {interest}
+                            <X className="h-3 w-3 ml-1" />
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      {/* Available Interests */}
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Add interests:</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {availableInterests
+                            .filter(interest => !formData.interests.includes(interest))
+                            .map((interest) => (
+                              <Badge 
+                                key={interest} 
+                                variant="outline" 
+                                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                                onClick={() => addInterest(interest)}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                {interest}
+                              </Badge>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {user.interests.map((interest) => (
+                        <Badge key={interest} variant="secondary">
+                          {interest}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
-};
-
-export default Profile;
+}

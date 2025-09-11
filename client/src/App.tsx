@@ -1,76 +1,63 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Signup from './pages/Signup';
-import Login from './pages/Login';
-import InvestorDashboard from './pages/InvestorDashboard';
-import EntrepreneurDashboard from './pages/EntrepreneurDashboard';
-import Profile from './pages/Profile';
-import Entrepreneurs from './pages/Entrepreneurs';
-import Investors from './pages/Investors';
-import Settings from './pages/Settings';
-import ChatPage from './pages/ChatPage';
-import Layout from './components/Layout';
-import { UserProvider, useUser } from './context/UserContext';
-import './styles/App.css';
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "@/components/auth/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
+import Upload from "./pages/Upload";
+import Notifications from "./pages/Notifications";
+import NotFound from "./pages/NotFound";
 
-// Dashboard Router Component
-const DashboardRouter = () => {
-  const { user } = useUser();
-  
-  if (!user) {
-    return <Login />;
-  }
-  
-  if (user.role === 'entrepreneur') {
-    return <EntrepreneurDashboard userType="entrepreneur" />;
-  } else {
-    return <InvestorDashboard userType="investor" />;
-  }
-};
+const queryClient = new QueryClient();
 
-function App() {
-  return (
-    <UserProvider>
-      <Router>
-        <div className="App">
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={
-              <Layout>
-                <DashboardRouter />
-              </Layout>
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             } />
             <Route path="/profile" element={
-              <Layout>
+              <ProtectedRoute>
                 <Profile />
-              </Layout>
+              </ProtectedRoute>
             } />
-            <Route path="/entrepreneurs" element={
-              <Layout>
-                <Entrepreneurs />
-              </Layout>
+            <Route path="/messages" element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
             } />
-            <Route path="/investors" element={
-              <Layout>
-                <Investors />
-              </Layout>
+            <Route path="/upload" element={
+              <ProtectedRoute requiredRole="entrepreneur">
+                <Upload />
+              </ProtectedRoute>
             } />
-            <Route path="/settings" element={
-              <Layout>
-                <Settings />
-              </Layout>
+            <Route path="/notifications" element={
+              <ProtectedRoute requiredRole="entrepreneur">
+                <Notifications />
+              </ProtectedRoute>
             } />
-            <Route path="/chat" element={
-              <Layout>
-                <ChatPage />
-              </Layout>
-            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
-      </Router>
-    </UserProvider>
-  );
-}
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
