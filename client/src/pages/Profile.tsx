@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +28,7 @@ const availableInterests = [
   'Real Estate',
   'Retail',
   'Travel',
-  'Other'
+  'Others'
 ];
 
 export default function Profile() {
@@ -44,10 +44,25 @@ export default function Profile() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customInterest, setCustomInterest] = useState('');
 
+  // Load saved profile data from localStorage
+  useEffect(() => {
+    const savedProfile = localStorage.getItem(`profile_${user.id}`);
+    if (savedProfile) {
+      const parsedProfile = JSON.parse(savedProfile);
+      setFormData({
+        name: parsedProfile.name || user.name,
+        bio: parsedProfile.bio || user.bio || '',
+        interests: parsedProfile.interests || [...user.interests],
+      });
+    }
+  }, [user]);
+
   if (!user) return null;
 
   const handleSave = () => {
-    console.log('Updating user:', formData);
+    // Save to localStorage
+    localStorage.setItem(`profile_${user.id}`, JSON.stringify(formData));
+    console.log('Profile saved:', formData);
     setIsEditing(false);
   };
 
@@ -61,7 +76,7 @@ export default function Profile() {
   };
 
   const addInterest = (interest: string) => {
-    if (interest === 'Other') {
+    if (interest === 'Others') {
       setShowCustomInput(true);
       return;
     }
@@ -120,7 +135,7 @@ export default function Profile() {
                   </Button>
                 </div>
                 
-                <h2 className="text-xl font-semibold mb-1">{user.name}</h2>
+                <h2 className="text-xl font-semibold mb-1">{formData.name || user.name}</h2>
                 <p className="text-muted-foreground text-sm mb-2">{user.email}</p>
                 <Badge variant="secondary" className="mb-4 capitalize">
                   {user.role}
@@ -186,7 +201,7 @@ export default function Profile() {
                     />
                   ) : (
                     <p className="text-sm py-2 text-muted-foreground">
-                      {user.bio || 'No bio added yet.'}
+                      {formData.bio || user.bio || 'No bio added yet.'}
                     </p>
                   )}
                 </div>
@@ -246,7 +261,7 @@ export default function Profile() {
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {user.interests.map((interest) => (
+                      {(formData.interests.length > 0 ? formData.interests : user.interests).map((interest) => (
                         <Badge key={interest} variant="secondary">
                           {interest}
                         </Badge>

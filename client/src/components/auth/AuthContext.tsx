@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check for stored auth data on app load
-    const storedUser = localStorage.getItem('pitchbridge_user');
+    const storedUser = localStorage.getItem('venturonest_user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
         });
       } catch (error) {
-        localStorage.removeItem('pitchbridge_user');
+        localStorage.removeItem('venturonest_user');
         setAuthState({
           user: null,
           isLoading: false,
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const user = mockUsers.find(u => u.email === email && u.role === role);
     
     if (user && password === 'demo123') {
-      localStorage.setItem('pitchbridge_user', JSON.stringify(user));
+      localStorage.setItem('venturonest_user', JSON.stringify(user));
       setAuthState({
         user,
         isLoading: false,
@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
     
-    localStorage.setItem('pitchbridge_user', JSON.stringify(newUser));
+    localStorage.setItem('venturonest_user', JSON.stringify(newUser));
     setAuthState({
       user: newUser,
       isLoading: false,
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('pitchbridge_user');
+    localStorage.removeItem('venturonest_user');
     setAuthState({
       user: null,
       isLoading: false,

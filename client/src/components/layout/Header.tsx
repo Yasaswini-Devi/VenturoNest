@@ -31,7 +31,7 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/dashboard" className="font-bold text-xl text-primary">
-          PitchBridge
+          VenturoNest
         </Link>
 
         {/* Search */}
