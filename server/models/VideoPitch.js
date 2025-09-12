@@ -13,7 +13,10 @@ const videoPitchSchema = new mongoose.Schema({
   saves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   isPublished: { type: Boolean, default: false },
-  isDraft: { type: Boolean, default: true }
+  isDraft: { type: Boolean, default: true },
+  // AI Feedback fields
+  aiFeedback: { type: String },
+  feedbackGeneratedAt: { type: Date }
 }, {
   timestamps: true // This adds createdAt and updatedAt automatically
 });

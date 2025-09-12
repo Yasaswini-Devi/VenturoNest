@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 
 const VideoPitch = require('../models/VideoPitch');
 const User = require('../models/User');
+const { getPitchFeedbackFromData } = require('../services/feedback');
 const router = express.Router();
 
 // Configure multer for file uploads (memory storage for ImageKit)
@@ -82,11 +83,10 @@ router.post('/upload', upload.single('video'), async (req, res) => {
       industry,
       fundingNeeds,
       currency,
-      entrepreneurId,
       tags,
       videoLink
     } = req.body;
-
+     const entrepreneurId = "68c3d446966984934a384293";
     if (!title || !description || !industry || !fundingNeeds || !entrepreneurId) {
       return res.status(400).json({
         success: false,
@@ -514,6 +514,66 @@ router.get('/debug/:id', async (req, res) => {
       success: false,
       message: 'Failed to debug pitch',
       error: error.message
+    });
+  }
+});
+
+// 🤖 Generate AI feedback for a pitch
+router.post('/:id/feedback', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate pitch ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid pitch ID format'
+      });
+    }
+
+    // Find the pitch
+    const pitch = await VideoPitch.findById(id).populate('entrepreneurId', 'name email');
+    
+    if (!pitch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Pitch not found'
+      });
+    }
+
+    // Generate AI feedback
+    const pitchData = {
+      title: pitch.title,
+      industry: pitch.industry,
+      fundingNeeds: pitch.fundingNeeds,
+      description: pitch.description
+    };
+
+    console.log('Generating AI feedback for pitch:', pitch.title);
+    const feedback = await getPitchFeedbackFromData(pitchData);
+
+    // Store feedback in database (optional - you could add a feedback field to VideoPitch model)
+    pitch.aiFeedback = feedback;
+    pitch.feedbackGeneratedAt = new Date();
+    await pitch.save();
+
+    res.json({
+      success: true,
+      data: {
+        pitchId: pitch._id,
+        pitchTitle: pitch.title,
+        feedback: feedback,
+        generatedAt: new Date().toISOString()
+      },
+      message: 'AI feedback generated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error generating pitch feedback:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate AI feedback',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 });

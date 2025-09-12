@@ -7,11 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Upload as UploadIcon, Link2, Play, X, Plus, DollarSign, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload as UploadIcon, Link2, Play, X, Plus, DollarSign, CheckCircle, AlertCircle, Loader2, Bot, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/components/auth/AuthContext';
 import { uploadPitchWithFile, uploadPitchWithLink, savePitchAsDraft } from '@/services/pitchApi';
+import { generatePitchFeedback } from '@/services/feedbackApi';
+import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import type { PitchUploadData } from '@/services/pitchApi';
 
 const industries = [
@@ -58,6 +60,15 @@ export default function Upload() {
     message: '',
   });
   const [isDraftSaving, setIsDraftSaving] = useState(false);
+  
+  // AI Feedback state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackData, setFeedbackData] = useState<{
+    feedback: string;
+    pitchTitle: string;
+    generatedAt: string;
+  } | null>(null);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
 
   if (!user) return null;
 
@@ -249,6 +260,36 @@ export default function Upload() {
     }
   };
 
+  const handleGenerateFeedback = async (pitchId: string) => {
+    setIsGeneratingFeedback(true);
+    
+    try {
+      const response = await generatePitchFeedback(pitchId);
+      
+      if (response.success) {
+        setFeedbackData({
+          feedback: response.data.feedback,
+          pitchTitle: response.data.pitchTitle,
+          generatedAt: response.data.generatedAt,
+        });
+        setShowFeedbackModal(true);
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: response.message || 'Failed to generate AI feedback',
+        });
+      }
+    } catch (error) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Failed to generate feedback. Please try again.',
+      });
+      console.error('Feedback generation error:', error);
+    } finally {
+      setIsGeneratingFeedback(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-hero">
       <Header />
@@ -273,10 +314,31 @@ export default function Upload() {
             <AlertDescription>
               {uploadStatus.message}
               {uploadStatus.pitchId && (
-                <div className="mt-2">
-                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                    Pitch ID: {uploadStatus.pitchId}
-                  </code>
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      Pitch ID: {uploadStatus.pitchId}
+                    </code>
+                  </div>
+                  <Button
+                    onClick={() => handleGenerateFeedback(uploadStatus.pitchId!)}
+                    disabled={isGeneratingFeedback}
+                    className="bg-gradient-to-r from-primary to-accent hover:from-primary-hover hover:to-accent/90 text-white"
+                    size="sm"
+                  >
+                    {isGeneratingFeedback ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating AI Feedback...
+                      </>
+                    ) : (
+                      <>
+                        <Bot className="mr-2 h-4 w-4" />
+                        <Sparkles className="mr-1 h-3 w-3" />
+                        Get AI Feedback
+                      </>
+                    )}
+                  </Button>
                 </div>
               )}
             </AlertDescription>
@@ -542,6 +604,18 @@ export default function Upload() {
           </div>
         </form>
       </main>
+
+      {/* AI Feedback Modal */}
+      {feedbackData && (
+        <FeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          feedback={feedbackData.feedback}
+          pitchTitle={feedbackData.pitchTitle}
+          generatedAt={feedbackData.generatedAt}
+          isLoading={isGeneratingFeedback}
+        />
+      )}
     </div>
   );
 }
