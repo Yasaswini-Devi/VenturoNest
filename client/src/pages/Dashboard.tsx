@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { TrendingUp, Clock, Filter, Users } from 'lucide-react';
 import { useAuth } from '@/components/auth/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { Pitch, InterestedInvestor } from '@/types/user';
 
 // Mock data
@@ -167,37 +170,32 @@ export default function Dashboard() {
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('newest');
 
+  // new states for popup
+  const [showInvestmentDialog, setShowInvestmentDialog] = useState(false);
+  const [investmentAmount, setInvestmentAmount] = useState('');
+  const [comparisonType, setComparisonType] = useState('greater');
+
   if (!user) return null;
 
-  const handleLike = (pitchId: string) => {
-    console.log('Liked pitch:', pitchId);
+  const handleLike = (pitchId: string) => console.log('Liked pitch:', pitchId);
+  const handleSave = (pitchId: string) => console.log('Saved pitch:', pitchId);
+  const handleComment = (pitchId: string) => console.log('Comment on pitch:', pitchId);
+  const handleView = (pitchId: string) => console.log('View pitch:', pitchId);
+  const handleMessage = (investorId: string) => console.log('Message investor:', investorId);
+  const handleViewProfile = (investorId: string) => console.log('View investor profile:', investorId);
+  const handleConnect = (investorId: string) => console.log('Connect with investor:', investorId);
+
+  const handleIndustryChange = (value: string) => {
+    if (value === 'investment') {
+      setShowInvestmentDialog(true);
+    } else {
+      setSelectedIndustry(value);
+    }
   };
 
-  const handleSave = (pitchId: string) => {
-    console.log('Saved pitch:', pitchId);
-  };
-
-  const handleComment = (pitchId: string) => {
-    console.log('Comment on pitch:', pitchId);
-  };
-
-  const handleView = (pitchId: string) => {
-    console.log('View pitch:', pitchId);
-  };
-
-  const handleMessage = (investorId: string) => {
-    console.log('Message investor:', investorId);
-    // Navigate to messages page with investor
-  };
-
-  const handleViewProfile = (investorId: string) => {
-    console.log('View investor profile:', investorId);
-    // Navigate to investor profile page
-  };
-
-  const handleConnect = (investorId: string) => {
-    console.log('Connect with investor:', investorId);
-    // Accept connection request
+  const handleApplyInvestmentFilter = () => {
+    console.log('Filtering by investment:', investmentAmount, comparisonType);
+    setShowInvestmentDialog(false);
   };
 
   return (
@@ -241,7 +239,7 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               {user.role === 'investor' ? (
                 <>
-                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                  <Select value={selectedIndustry} onValueChange={handleIndustryChange}>
                     <SelectTrigger className="w-40">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Industry" />
@@ -253,7 +251,7 @@ export default function Dashboard() {
                       <SelectItem value="fintech">Fintech</SelectItem>
                       <SelectItem value="clean-energy">Clean Energy</SelectItem>
                       <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="Investment">Investment Required</SelectItem>
+                      <SelectItem value="investment">Investment Required</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -387,6 +385,47 @@ export default function Dashboard() {
           )}
         </Tabs>
       </main>
+
+      {/* Investment Filter Dialog */}
+      <Dialog open={showInvestmentDialog} onOpenChange={setShowInvestmentDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Filter by Investment Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="investmentAmount">Investment Amount</Label>
+              <Input
+                id="investmentAmount"
+                type="number"
+                value={investmentAmount}
+                onChange={(e) => setInvestmentAmount(e.target.value)}
+                placeholder="Enter amount"
+              />
+            </div>
+            <div>
+              <Label>Condition</Label>
+              <Select value={comparisonType} onValueChange={setComparisonType}>
+                <SelectTrigger className="w-full mt-2">
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="less">Less than</SelectItem>
+                  <SelectItem value="greater">Greater than</SelectItem>
+                  <SelectItem value="atleast">At least</SelectItem>
+                  <SelectItem value="exact">Exactly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInvestmentDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleApplyInvestmentFilter}>Apply</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
