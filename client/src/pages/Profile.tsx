@@ -28,6 +28,7 @@ const availableInterests = [
   'Real Estate',
   'Retail',
   'Travel',
+  'Other'
 ];
 
 export default function Profile() {
@@ -39,10 +40,13 @@ export default function Profile() {
     interests: [...(user?.interests || [])],
   });
 
+  // new states for custom interests
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customInterest, setCustomInterest] = useState('');
+
   if (!user) return null;
 
   const handleSave = () => {
-    // In a real app, this would update the user via API
     console.log('Updating user:', formData);
     setIsEditing(false);
   };
@@ -57,6 +61,11 @@ export default function Profile() {
   };
 
   const addInterest = (interest: string) => {
+    if (interest === 'Other') {
+      setShowCustomInput(true);
+      return;
+    }
+
     if (!formData.interests.includes(interest)) {
       setFormData({
         ...formData,
@@ -65,10 +74,21 @@ export default function Profile() {
     }
   };
 
+  const handleAddCustomInterest = () => {
+    if (customInterest.trim() && !formData.interests.includes(customInterest.trim())) {
+      setFormData({
+        ...formData,
+        interests: [...formData.interests, customInterest.trim()],
+      });
+    }
+    setCustomInterest('');
+    setShowCustomInput(false);
+  };
+
   const removeInterest = (interest: string) => {
     setFormData({
       ...formData,
-      interests: formData.interests.filter(i => i !== interest),
+      interests: formData.interests.filter((i) => i !== interest),
     });
   };
 
@@ -196,7 +216,7 @@ export default function Profile() {
                         <Label className="text-xs text-muted-foreground">Add interests:</Label>
                         <div className="flex flex-wrap gap-2 mt-2">
                           {availableInterests
-                            .filter(interest => !formData.interests.includes(interest))
+                            .filter((interest) => !formData.interests.includes(interest))
                             .map((interest) => (
                               <Badge 
                                 key={interest} 
@@ -209,6 +229,19 @@ export default function Profile() {
                               </Badge>
                             ))}
                         </div>
+
+                        {showCustomInput && (
+                          <div className="flex items-center gap-2 mt-3">
+                            <Input
+                              value={customInterest}
+                              onChange={(e) => setCustomInterest(e.target.value)}
+                              placeholder="Enter your interest"
+                            />
+                            <Button size="sm" onClick={handleAddCustomInterest}>
+                              Add
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ) : (
