@@ -253,7 +253,7 @@ export default function Dashboard() {
                       <SelectItem value="fintech">Fintech</SelectItem>
                       <SelectItem value="clean-energy">Clean Energy</SelectItem>
                       <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="retail">Investment Required</SelectItem>
+                      <SelectItem value="Investment">Investment Required</SelectItem>
                     </SelectContent>
                   </Select>
 
