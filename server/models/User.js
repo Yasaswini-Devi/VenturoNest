@@ -6,5 +6,10 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['entrepreneur', 'investor'], required: true },
   companyName: { type: String },
   investmentFocus: { type: String },
+  bio: { type: String },
+  avatar: { type: String },
+  interests: [{ type: String }]
+}, {
+  timestamps: true // This adds createdAt and updatedAt automatically
 });
 module.exports = mongoose.model('User', userSchema);

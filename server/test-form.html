@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pitch Upload API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        .tab.active {
+            background: #007bff;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 VenturoNest Pitch Upload API Test</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('upload')">Upload Pitch</button>
+            <button class="tab" onclick="switchTab('draft')">Save Draft</button>
+            <button class="tab" onclick="switchTab('test')">API Tests</button>
+        </div>
+
+        <!-- Upload Pitch Form -->
+        <div id="upload" class="tab-content active">
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="title">Pitch Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="e.g., AI-Powered Healthcare Assistant">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea id="description" name="description" required placeholder="Describe your innovative idea..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="industry">Industry *</label>
+                    <select id="industry" name="industry" required>
+                        <option value="">Select Industry</option>
+                        <option value="AI & Machine Learning">AI & Machine Learning</option>
+                        <option value="Fintech">Fintech</option>
+                        <option value="Healthcare">Healthcare</option>
+                        <option value="SaaS">SaaS</option>
+                        <option value="E-commerce">E-commerce</option>
+                        <option value="Clean Energy">Clean Energy</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fundingNeeds">Funding Needed *</label>
+                    <input type="number" id="fundingNeeds" name="fundingNeeds" required placeholder="500000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select id="currency" name="currency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="entrepreneurId">Entrepreneur ID *</label>
+                    <input type="text" id="entrepreneurId" name="entrepreneurId" value="60a7b8c9d8f2a4b5c6d7e8f9" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="videoLink">Video Link</label>
+                    <input type="url" id="videoLink" name="videoLink" placeholder="https://youtube.com/watch?v=...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="videoFile">OR Upload Video File</label>
+                    <input type="file" id="videoFile" name="video" accept="video/*">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tags">Tags (comma-separated)</label>
+                    <input type="text" id="tags" name="tags" placeholder="AI,Healthcare,Technology">
+                </div>
+                
+                <button type="submit">🚀 Upload Pitch</button>
+            </form>
+        </div>
+
+        <!-- Draft Form -->
+        <div id="draft" class="tab-content">
+            <form id="draftForm">
+                <div class="form-group">
+                    <label for="draftTitle">Title *</label>
+                    <input type="text" id="draftTitle" name="title" required placeholder="Draft pitch title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="draftDescription">Description</label>
+                    <textarea id="draftDescription" name="description" placeholder="Optional description..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="draftEntrepreneurId">Entrepreneur ID *</label>
+                    <input type="text" id="draftEntrepreneurId" name="entrepreneurId" value="60a7b8c9d8f2a4b5c6d7e8f9" required>
+                </div>
+                
+                <button type="submit">💾 Save Draft</button>
+            </form>
+        </div>
+
+        <!-- API Tests -->
+        <div id="test" class="tab-content">
+            <h3>API Test Suite</h3>
+            <button onclick="testImageKit()">🧪 Test ImageKit Connection</button>
+            <button onclick="testValidation()">🔍 Test Validation</button>
+            <button onclick="runAllTests()">🎯 Run All Tests</button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showResult(message, isError = false) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${isError ? 'error' : 'success'}`;
+            result.style.display = 'block';
+        }
+
+        // Upload form handler
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const form = e.target;
+            
+            // Add form fields
+            const fields = ['title', 'description', 'industry', 'fundingNeeds', 'currency', 'entrepreneurId', 'videoLink', 'tags'];
+            fields.forEach(field => {
+                const value = form[field].value;
+                if (value) formData.append(field, value);
+            });
+            
+            // Add video file if selected
+            const videoFile = form.video.files[0];
+            if (videoFile) {
+                formData.append('video', videoFile);
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/pitches/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Upload successful! Pitch ID: ${result.data.pitchId}`, false);
+                } else {
+                    showResult(`❌ Upload failed: ${result.message}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, true);
+            }
+        });
+
+        // Draft form handler
+        document.getElementById('draftForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/pitches/draft', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ Draft saved! ID: ${result.data.pitchId}`, false);
+                } else {
+                    showResult(`❌ Draft save failed: ${result.message}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, true);
+            }
+        });
+
+        // Test functions
+        async function testImageKit() {
+            try {
+                const response = await fetch('http://localhost:5000/api/pitches/test-imagekit');
+                const result = await response.json();
+                showResult(`🧪 ImageKit Test: ${result.message} (Status: ${result.statusCode})`, !result.success);
+            } catch (error) {
+                showResult(`❌ ImageKit test failed: ${error.message}`, true);
+            }
+        }
+
+        async function testValidation() {
+            try {
+                const response = await fetch('http://localhost:5000/api/pitches/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: 'Test without required fields' })
+                });
+                
+                const result = await response.json();
+                
+                if (response.status === 400) {
+                    showResult(`✅ Validation test passed: ${result.message}`, false);
+                } else {
+                    showResult(`❌ Validation test failed: Expected 400 status`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Validation test error: ${error.message}`, true);
+            }
+        }
+
+        async function runAllTests() {
+            showResult('🔄 Running all tests...', false);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testImageKit();
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testValidation();
+            
+            showResult('🎉 All tests completed! Check individual results above.', false);
+        }
+    </script>
+</body>
+</html>

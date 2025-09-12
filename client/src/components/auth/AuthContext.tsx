@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Mock users for demo
   const mockUsers: User[] = [
     {
-      id: '1',
+      id: '60a7b8c9d8f2a4b5c6d7e8f9',
       email: 'investor@demo.com',
       name: 'John Investor',
       role: 'investor',
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       createdAt: '2024-01-01',
     },
     {
-      id: '2',
+      id: '60a7b8c9d8f2a4b5c6d7e8fa',
       email: 'entrepreneur@demo.com',
       name: 'Sarah Chen',
       role: 'entrepreneur',
@@ -108,8 +108,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Mock registration - in real app, this would be an API call
     await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
     
+    // Generate a mock ObjectID format
+    const generateMockObjectId = () => {
+      const timestamp = Math.floor(Date.now() / 1000).toString(16);
+      const randomHex = () => Math.floor(Math.random() * 16).toString(16);
+      return timestamp + Array(16).fill(0).map(() => randomHex()).join('');
+    };
+    
     const newUser: User = {
-      id: Date.now().toString(),
+      id: generateMockObjectId(),
       email,
       name,
       role,

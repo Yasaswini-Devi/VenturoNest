@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Upload as UploadIcon, Link2, Play, X, Plus, DollarSign } from 'lucide-react';
+import { Upload as UploadIcon, Link2, Play, X, Plus, DollarSign, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useAuth } from '@/components/auth/AuthContext';
+import { uploadPitchWithFile, uploadPitchWithLink, savePitchAsDraft } from '@/services/pitchApi';
+import type { PitchUploadData } from '@/services/pitchApi';
 
 const industries = [
   'AI & Machine Learning',
@@ -45,6 +48,16 @@ export default function Upload() {
     tags: [] as string[],
   });
   const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+    pitchId?: string;
+  }>({
+    type: null,
+    message: '',
+  });
+  const [isDraftSaving, setIsDraftSaving] = useState(false);
 
   if (!user) return null;
 
@@ -87,10 +100,153 @@ export default function Upload() {
     setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting pitch:', formData);
-    // Here you would typically upload to your backend
+    
+    if (!user) {
+      setUploadStatus({
+        type: 'error',
+        message: 'You must be logged in to upload a pitch',
+      });
+      return;
+    }
+
+    // Validation
+    if (!formData.title || !formData.description || !formData.industry || !formData.fundingNeeds) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Please fill in all required fields',
+      });
+      return;
+    }
+
+    if (!formData.videoFile && !formData.videoLink) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Please provide either a video file or video link',
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus({ type: null, message: '' });
+
+    try {
+      const uploadData: PitchUploadData = {
+        title: formData.title,
+        description: formData.description,
+        industry: formData.industry,
+        fundingNeeds: formData.fundingNeeds,
+        currency: formData.currency,
+        entrepreneurId: user.id,
+        tags: formData.tags,
+        videoFile: formData.videoFile || undefined,
+        videoLink: formData.videoLink || undefined,
+      };
+
+      let result;
+      
+      if (formData.videoFile) {
+        // Upload with file
+        result = await uploadPitchWithFile(uploadData);
+      } else {
+        // Upload with link
+        result = await uploadPitchWithLink(uploadData);
+      }
+
+      if (result.success) {
+        setUploadStatus({
+          type: 'success',
+          message: 'Pitch uploaded successfully! Your pitch is now live.',
+          pitchId: result.data?.pitchId,
+        });
+        
+        // Reset form after successful upload
+        setFormData({
+          title: '',
+          description: '',
+          industry: '',
+          fundingNeeds: '',
+          currency: 'USD',
+          videoFile: null,
+          videoLink: '',
+          tags: [],
+        });
+        
+        // Reset upload type
+        setUploadType('file');
+        
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: result.message || 'Failed to upload pitch',
+        });
+      }
+    } catch (error) {
+      setUploadStatus({
+        type: 'error',
+        message: 'An unexpected error occurred. Please try again.',
+      });
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!user) {
+      setUploadStatus({
+        type: 'error',
+        message: 'You must be logged in to save a draft',
+      });
+      return;
+    }
+
+    if (!formData.title) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Please provide at least a title to save as draft',
+      });
+      return;
+    }
+
+    setIsDraftSaving(true);
+    setUploadStatus({ type: null, message: '' });
+
+    try {
+      const draftData: Partial<PitchUploadData> = {
+        title: formData.title,
+        description: formData.description,
+        industry: formData.industry,
+        fundingNeeds: formData.fundingNeeds,
+        currency: formData.currency,
+        entrepreneurId: user.id,
+        tags: formData.tags,
+        videoLink: formData.videoLink,
+      };
+
+      const result = await savePitchAsDraft(draftData);
+
+      if (result.success) {
+        setUploadStatus({
+          type: 'success',
+          message: 'Draft saved successfully! You can continue working on it later.',
+        });
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: result.message || 'Failed to save draft',
+        });
+      }
+    } catch (error) {
+      setUploadStatus({
+        type: 'error',
+        message: 'Failed to save draft. Please try again.',
+      });
+      console.error('Draft save error:', error);
+    } finally {
+      setIsDraftSaving(false);
+    }
   };
 
   return (
@@ -102,6 +258,30 @@ export default function Upload() {
           <h1 className="text-3xl font-bold mb-2">Upload Your Pitch</h1>
           <p className="text-muted-foreground">Share your innovative idea with potential investors</p>
         </div>
+
+        {/* Status Alert */}
+        {uploadStatus.type && (
+          <Alert className={`mb-6 ${uploadStatus.type === 'success' ? 'border-green-500' : 'border-red-500'}`}>
+            {uploadStatus.type === 'success' ? (
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            )}
+            <AlertTitle>
+              {uploadStatus.type === 'success' ? 'Success!' : 'Error'}
+            </AlertTitle>
+            <AlertDescription>
+              {uploadStatus.message}
+              {uploadStatus.pitchId && (
+                <div className="mt-2">
+                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                    Pitch ID: {uploadStatus.pitchId}
+                  </code>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Video Upload */}
@@ -322,16 +502,42 @@ export default function Upload() {
 
           {/* Submit */}
           <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline">
-              Save as Draft
+            <Button 
+              type="button" 
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={isUploading || isDraftSaving || !formData.title}
+            >
+              {isDraftSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving Draft...
+                </>
+              ) : (
+                'Save as Draft'
+              )}
             </Button>
             <Button 
               type="submit" 
               className="bg-gradient-primary hover:opacity-90"
-              disabled={!formData.title || !formData.description || !formData.industry || 
-                       (!formData.videoFile && !formData.videoLink)}
+              disabled={
+                isUploading || 
+                isDraftSaving || 
+                !formData.title || 
+                !formData.description || 
+                !formData.industry || 
+                !formData.fundingNeeds ||
+                (!formData.videoFile && !formData.videoLink)
+              }
             >
-              Publish Pitch
+              {isUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {formData.videoFile ? 'Uploading Video...' : 'Publishing Pitch...'}
+                </>
+              ) : (
+                'Publish Pitch'
+              )}
             </Button>
           </div>
         </form>
