@@ -41,7 +41,7 @@ export default function Login() {
         await register(formData.email, formData.password, formData.name, formData.role);
         toast({
           title: "Account created!",
-          description: "Welcome to PitchBridge.",
+          description: "Welcome to VenturoNest.",
         });
       }
       
@@ -72,7 +72,7 @@ export default function Login() {
         <div className="text-center lg:text-left space-y-6">
           <div>
             <Link to="/" className="inline-block">
-              <h1 className="text-4xl font-bold text-primary mb-2">PitchBridge</h1>
+              <h1 className="text-4xl font-bold text-primary mb-2">VenturoNest</h1>
             </Link>
             <p className="text-xl text-muted-foreground">
               Where innovation meets investment

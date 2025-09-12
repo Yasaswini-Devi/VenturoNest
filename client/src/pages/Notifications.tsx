@@ -85,7 +85,7 @@ const mockNotifications: Notification[] = [
     title: 'Pitch performance update',
     description: 'Your pitch has reached 250 views this week (+15% from last week)',
     actor: {
-      name: 'PitchBridge',
+      name: 'VenturoNest',
       avatar: '',
       role: 'investor',
     },
@@ -206,7 +206,7 @@ export default function Notifications() {
                   >
                     <div className="flex items-start space-x-4">
                       <div className="flex-shrink-0">
-                        {notification.actor.name === 'PitchBridge' ? (
+                        {notification.actor.name === 'VenturoNest' ? (
                           <div className="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
                             {getNotificationIcon(notification.type)}
                           </div>

@@ -10,7 +10,7 @@ const Index = () => {
       {/* Header */}
       <header className="container mx-auto px-4 py-6">
         <nav className="flex items-center justify-between">
-          <div className="font-bold text-2xl text-primary">PitchBridge</div>
+          <div className="font-bold text-2xl text-primary">VenturoNest</div>
             <div className="flex items-center space-x-4">
               <Link to="/login">
                 <Button variant="ghost">Login</Button>
@@ -134,7 +134,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="container mx-auto px-4 py-8 mt-16 border-t">
         <div className="text-center text-muted-foreground">
-          <p>&copy; 2024 PitchBridge. Connecting innovation with investment.</p>
+          <p>&copy; 2024 VenturoNest. Connecting innovation with investment.</p>
         </div>
       </footer>
     </div>
